@@ -5,6 +5,8 @@ import java.awt.image.BufferedImage;
 
 import javax.swing.JPanel;
 
+import GameState.GameStateManager;
+
 import com.sun.glass.events.KeyEvent;
 public class GamePanel extends JPanel implements Runnable,KeyListener {
 	 //dimensions
@@ -17,6 +19,10 @@ public class GamePanel extends JPanel implements Runnable,KeyListener {
 	//image
 	private BufferedImage image;
 	private Graphics2D g;
+	
+	//Game state manager
+	private GameStateManager gsm;
+	
 	public GamePanel() {
 		super();
 		setPreferredSize(new Dimension(WIDTH*SCALE,HEIGHT*SCALE));
@@ -30,12 +36,60 @@ public class GamePanel extends JPanel implements Runnable,KeyListener {
 			 addKeyListener(this);
 			 thread.start();
 		 }
+	 } 
+	 private void init(){
+		 image = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
+		 g=(Graphics2D)g;
+		 running=true;
+		 gsm=new GameStateManager();
+		 
+		 
 	 }
 	 public void run(){
-			 
+		 long start,elapsed,wait;
+			init(); 
+			//game loop
+			while(running){
+				start =System.nanoTime();
+				update();
+				draw();
+				drawToScreen();
+				elapsed=System.nanoTime()-start;
+				wait=targetTime-elapsed/1000000;
+				try{
+					Thread.sleep(wait);
+				}
+				catch (Exception e){
+					e.printStackTrace();
+				}
+			}
 		 }
-	 public void keyTyped(KeyEvent key){}
-	 public void keyPressed(KeyEvent key){}
-	 public void keyReleased(KeyEvent key){}
+	 private void update(){
+		 gsm.update();
+	 }
+	 private void draw(){
+		 gsm.draw(g);
+	 }
+	 private void drawToScreen(){
+		Graphics g2=getGraphics();
+		g2.drawImage(image,0,0,null);
+		g2.dispose();
+	 }
+	 
+	@Override
+	public void keyPressed(java.awt.event.KeyEvent key) {
+		gsm.keyPressed(key.getKeyCode());
+		
+	}
+	@Override
+	public void keyReleased(java.awt.event.KeyEvent key) {
+		gsm.keyReleased(key.getKeyCode());
+		
+	}
+	@Override
+	public void keyTyped(java.awt.event.KeyEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
 	 
 }
